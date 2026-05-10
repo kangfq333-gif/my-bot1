@@ -15,7 +15,6 @@ client.once('ready', () => {
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
 
-  // أمر اختبار
   if (message.content === '!ping') {
     message.reply('Pong 🏓');
   }
