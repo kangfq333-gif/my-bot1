@@ -7,8 +7,8 @@ const client = new Client({
   ]
 });
 
-// 👇 عدل هذا باسم الروم اللي تبي اللوحة فيه
-const 1492835764856426526 = "🎫-tickets";
+// ✅ Channel ID حق الروم
+const PANEL_CHANNEL_ID = "1492835764856426526";
 
 // خيارات التكت (تعدلها براحتك)
 const ticketOptions = [
@@ -20,29 +20,33 @@ const ticketOptions = [
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  const guild = client.guilds.cache.first();
-  if (!guild) return;
+  try {
+    const channel = await client.channels.fetch(PANEL_CHANNEL_ID);
 
-  const channel = guild.channels.cache.find(c => c.name === PANEL_CHANNEL_NAME);
-  if (!channel) {
-    console.log("Ticket panel channel not found");
-    return;
+    if (!channel) {
+      console.log("Channel not found");
+      return;
+    }
+
+    const menu = new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId('ticket_panel')
+        .setPlaceholder('اختر نوع التكت 🎫')
+        .addOptions(ticketOptions)
+    );
+
+    await channel.send({
+      content: "🎫 لوحة التكتات جاهزة، اختر نوع التكت:",
+      components: [menu]
+    });
+
+    console.log("Ticket panel sent successfully");
+
+  } catch (err) {
+    console.log("Error:", err);
   }
-
-  const menu = new ActionRowBuilder().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId('ticket_panel')
-      .setPlaceholder('اختر نوع التكت 🎫')
-      .addOptions(ticketOptions)
-  );
-
-  channel.send({
-    content: "🎫 لوحة التكتات جاهزة، اختر نوع التكت:",
-    components: [menu]
-  });
 });
 
-// إنشاء التكت
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isStringSelectMenu()) return;
 
