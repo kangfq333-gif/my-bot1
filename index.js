@@ -8,7 +8,7 @@ const client = new Client({
 });
 
 // 👇 عدل هذا باسم الروم اللي تبي اللوحة فيه
-const PANEL_CHANNEL_NAME = "🎫-tickets";
+const 1492835764856426526 = "🎫-tickets";
 
 // خيارات التكت (تعدلها براحتك)
 const ticketOptions = [
