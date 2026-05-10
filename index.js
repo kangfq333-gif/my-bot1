@@ -3,52 +3,55 @@ const { Client, GatewayIntentBits, PermissionsBitField, ActionRowBuilder, String
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.GuildMessages
   ]
 });
 
-// 👇 هنا أنت تتحكم بالأسماء (غيرها براحتك)
+// 👇 عدل هذا باسم الروم اللي تبي اللوحة فيه
+const PANEL_CHANNEL_NAME = "🎫-tickets";
+
+// خيارات التكت (تعدلها براحتك)
 const ticketOptions = [
   { label: 'تكت عام', value: 'general' },
   { label: 'دعم فني', value: 'support' },
-  { label: 'طلبات خاصة', value: 'private' }
+  { label: 'طلبات', value: 'orders' }
 ];
 
-client.once('ready', () => {
+client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
-});
 
-// أمر إظهار اللوحة
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
+  const guild = client.guilds.cache.first();
+  if (!guild) return;
 
-  if (message.content === '!ticket') {
-
-    const menu = new ActionRowBuilder().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId('ticket_menu')
-        .setPlaceholder('اختر اسم التكت 🎫')
-        .addOptions(ticketOptions)
-    );
-
-    message.channel.send({
-      content: "🎫 اختر التكت:",
-      components: [menu]
-    });
+  const channel = guild.channels.cache.find(c => c.name === PANEL_CHANNEL_NAME);
+  if (!channel) {
+    console.log("Ticket panel channel not found");
+    return;
   }
+
+  const menu = new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId('ticket_panel')
+      .setPlaceholder('اختر نوع التكت 🎫')
+      .addOptions(ticketOptions)
+  );
+
+  channel.send({
+    content: "🎫 لوحة التكتات جاهزة، اختر نوع التكت:",
+    components: [menu]
+  });
 });
 
-// تنفيذ الاختيار
+// إنشاء التكت
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isStringSelectMenu()) return;
 
-  if (interaction.customId === 'ticket_menu') {
+  if (interaction.customId === 'ticket_panel') {
 
-    const choice = interaction.values[0];
+    const type = interaction.values[0];
 
     const channel = await interaction.guild.channels.create({
-      name: `ticket-${choice}-${interaction.user.username}`,
+      name: `ticket-${type}-${interaction.user.username}`,
       permissionOverwrites: [
         {
           id: interaction.guild.id,
@@ -65,11 +68,11 @@ client.on('interactionCreate', async (interaction) => {
     });
 
     await interaction.reply({
-      content: `🎫 تم إنشاء التكت: ${channel}`,
+      content: `🎫 تم فتح تكتك: ${channel}`,
       ephemeral: true
     });
 
-    channel.send(`مرحبًا ${interaction.user} 👋\nتم فتح تكت: **${choice}**`);
+    channel.send(`مرحبًا ${interaction.user} 👋\nتم فتح تكت: **${type}**`);
   }
 });
 
